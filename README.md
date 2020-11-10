@@ -1,6 +1,6 @@
 # Defect STEM Video Analysis
 
-This project provides the source code for the paper ["Deep Learning based Automatic Defect Analysis System for In-situ Ion Irradiations TEM Videos"]().
+This project provides the source code for the paper  [A Deep Learning Based Automatic Defect Analysis Framework for In-situ TEM Ion Irradiations]() 
 
 ## Installation
 
@@ -8,10 +8,9 @@ Our code is modified from [qqwweee/keras-yolo3](https://github.com/qqwweee/keras
 
 ## Run
 
-You first need to download the pretrained weights or using the weights we trained.
+You first need to download the weights we trained. If you want to train for original YOLO weights, following instructions described [here](https://github.com/uw-cmg/DefectSTEMVideoAnalysis/tree/master/keras-yolo3)
 
-* [pretrained weights for YOLO]()
-* [our trained weights for the paper]()
+* [our trained weights for the paper](https://github.com/uw-cmg/DefectSTEMVideoAnalysis/tree/master/weights)
 
 You can run the training with the following command
 
