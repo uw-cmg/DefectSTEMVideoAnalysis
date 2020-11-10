@@ -24,11 +24,15 @@ from keras.utils import multi_gpu_model
 from collections import defaultdict
 import pandas as pd 
 gpu_num=1
+imageName=""
+modelName=""
 globalFrameInformation=[]
 
 class YOLO(object):
     def __init__(self):
-        self.model_path = 'model_data/NicolaosVII.h5' # model path or trained weights path
+        global modelName
+        modelName="NicolaosVI"
+        self.model_path = 'model_data/'+modelName+".h5" # model path or trained weights path
         self.anchors_path = 'model_data/yolo_anchors.txt'
         self.classes_path = 'model_data/coco_classes.txt'
         self.score = 0.05
@@ -51,7 +55,6 @@ class YOLO(object):
         self.sizeChange=list()
         self.density=list()
         self.storeForLAST=list()
-        self.storeForMFD=list()
     def _get_class(self):
         classes_path = os.path.expanduser(self.classes_path)
         with open(classes_path) as f:
@@ -112,8 +115,10 @@ class YOLO(object):
         current_ID=list()
         current_Position=list()
         formeanfree=list()
-        # tmpID = 0
+        global imageName
+        global modelName
         global globalFrameInformation
+        # tmpID = 0
 
         start = timer()
         if self.model_image_size != (None, None):
@@ -143,7 +148,7 @@ class YOLO(object):
         font = ImageFont.truetype(font='font/FiraMono-Medium.otf',
                     size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
         thickness = (image.size[0] + image.size[1]) // 600
-
+        
         if(self.frameNum==0):
             print("Frame: "+str(self.frameNum))
             for i, c in reversed(list(enumerate(out_classes))):
@@ -192,6 +197,8 @@ class YOLO(object):
                 #     fill=self.colors[c])
                 
                 #draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+                with open ("./output/"+imageName[:-4]+".txt", 'w+') as output_file_forPR:
+                    output_file_forPR.write(str(left)+","+str(top)+","+str(right)+","+str(bottom)+"\n")
                 del draw
 
         if(self.frameNum==1):
@@ -251,6 +258,8 @@ class YOLO(object):
                 #     fill=self.colors[c])
                 
                 #draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+                with open ("./output/"+imageName[:-4]+".txt", 'w+') as output_file_forPR:
+                    output_file_forPR.write(str(left)+","+str(top)+","+str(right)+","+str(bottom)+"\n")
                 del draw
 
         if(self.frameNum==2):
@@ -320,6 +329,8 @@ class YOLO(object):
                 #     fill=self.colors[c])
                 
                 #draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+                with open ("./output/"+imageName[:-4]+".txt", 'w+') as output_file_forPR:
+                    output_file_forPR.write(str(left)+","+str(top)+","+str(right)+","+str(bottom)+"\n")
                 del draw
         
         if(self.frameNum==3):
@@ -397,9 +408,11 @@ class YOLO(object):
                 #     fill=self.colors[c])
                 
                 #draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+                with open ("./output/"+imageName[:-4]+".txt", 'w+') as output_file_forPR:
+                    output_file_forPR.write(str(left)+","+str(top)+","+str(right)+","+str(bottom)+"\n")
                 del draw
 
-        if(self.frameNum>3 and self.frameNum<5):
+        if(self.frameNum>3 and self.frameNum<50):
             print("Frame: "+str(self.frameNum))
             for i, c in reversed(list(enumerate(out_classes))):
                 predicted_class = self.class_names[c]
@@ -459,10 +472,12 @@ class YOLO(object):
                 #     fill=self.colors[c])
                 
                 #draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+                with open ("./output/"+imageName[:-4]+".txt", 'w+') as output_file_forPR:
+                    output_file_forPR.write(str(left)+","+str(top)+","+str(right)+","+str(bottom)+"\n")
                 del draw    
 
 
-        if(self.frameNum >= 5):
+        if(self.frameNum >= 50):
             print("Frame: "+str(self.frameNum))
             for i, c in reversed(list(enumerate(out_classes))):
                 predicted_class = self.class_names[c]
@@ -493,7 +508,7 @@ class YOLO(object):
                 FlagFound = False
                 j=0
                 gaiBreakLe= False
-                while(j<5):
+                while(j<50):
                     j+=1
                     if FlagFound is not True:
                         for item in self.sumFrameDefectPosition[self.frameNum - j]:  
@@ -523,6 +538,8 @@ class YOLO(object):
                 #     fill=self.colors[c])
                 
                 #draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+                with open ("./output/"+imageName[:-4]+".txt", 'w+') as output_file_forPR:
+                    output_file_forPR.write(str(left)+","+str(top)+","+str(right)+","+str(bottom)+"\n")
                 del draw    
         
         # update global information
@@ -537,224 +554,25 @@ class YOLO(object):
                     if IDE in self.sumFrameDefectID[len(self.sumFrameDefectID)-2]:
                         if IDE not in self.sumFrameDefectID[len(self.sumFrameDefectID)-1]:
                             self.disappear.append((IDE, len(self.sumFrameDefectID)-1))
-        # with open("reusltForFrame.txt", "r+") as f:
-        #    f.write(str(self.sumFrameDefectPosition))
-        #   f.write("\n"+str(self.frameNum)+"\n")
-        # frame 0 is a list update for nextDefectsID
-        #if (self.frameNum == 0):
-        #    self.nextDefectID = tmpID + 1
-        #    print(self.nextDefectID)
+
         self.allframe.append(self.frameNum)
         self.frameNum=self.frameNum+1
         self.density.append((len(out_boxes)/1.3124*1E18, self.frameNum))
-
-        # if(self.frameNum>2):
-        #     for item in self.sumFrameDefectPosition[len(self.sumFrameDefectPosition)-1]:
-        #         for item2 in self.sumFrameDefectPosition[len(self.sumFrameDefectPosition)-2]:
-        #             if(item[0]==item2[0]):
-        #                 dist=math.sqrt((item[1]-item2[1])**2+(item[2]-item2[2])**2)
-        #                 if(item[0] not in [i[0] for i in formeanfree]):
-        #                     formeanfree.append((item[0], dist))
-        #     self.storeForMFD.append((self.frameNum, sum(formeanfree)/len(formeanfree)))
+        globalFrameInformation= self.sumFrameDefectPosition
 
         print(end - start)
-        globalFrameInformation= self.sumFrameDefectPosition
 
         return image
 
-    def close_session(self):
-        if not os.path.exists('./wholeVideo/distanceForEachDefect/'):
-            os.makedirs('./wholeVideo/distanceForEachDefect/')
-        oneIDsizeChange=list()
-        firstMechanism=list() # this is the disappear mechanism of growth
-        alist=list()
-        framesForPlot=list()
-        storeForPosition=list()
-        firstMechanismPos=list()
-        forclearance=list()
-        temp=list()
-        list1=list()
-        list2=list()
-        sumUp=0
-        loacalStoreForMFD={}
-        storeForDC={}
-        list3=list()
-        list4=list()
-        sizeGlobal= {}
-        ################################ This is for mean free distance######################
-        for i in range(len(self.sumFrameDefectPosition)-2):
-            for item in self.sumFrameDefectPosition[i]:
-                for item2 in self.sumFrameDefectPosition[i+1]:
-                    if(item[0]==item2[0]):
-                        
-                        if(item[0] in loacalStoreForMFD.keys()):
-                            loacalStoreForMFD[item[0]].append((i, math.sqrt((item[1]-item2[1])**2+(item[2]-item2[2])**2)))
-                            storeForDC[item[0]].append((i,item[1],item[2])) # frame number, center X, center Y
-                        else:
-                            loacalStoreForMFD[item[0]]=[(i, math.sqrt((item[1]-item2[1])**2+(item[2]-item2[2])**2))]
-                            storeForDC[item[0]]=[(i,item[1],item[2])]
-
-        for key, values in loacalStoreForMFD.items():
-            for item in values:
-                sumUp+=item[1]
-            mean=sumUp/len(values)
-            self.storeForMFD.append((key,mean))
-            sumUp=0
-
-        for key, values in storeForDC.items(): # This is for diffusion coefficient
-            lastPosition=values[len(values)-1]
-            initialPosition=values[0]
-            diffusionCo= (((lastPosition[1]-initialPosition[1])/2.6884)**2+((lastPosition[2]-initialPosition[2])/2.6884)**2)/4/(2.51304*len(values))
-            #diffusionCo= (((lastPosition[1]-initialPosition[1])/2.6884)**2+((lastPosition[2]-initialPosition[2])/2.6884)**2)/4/(0.14212*len(values))
-            list3.append(key)
-            list4.append(diffusionCo)
-
-        for item in self.storeForMFD:
-            list1.append(item[0])
-            list2.append(item[1])
-
-        df = pd.DataFrame( {'DefectID': list1,'mean distance': list2})
-        df.to_csv("./wholeVideo/mean.csv",header = True)
-
-        df=df = pd.DataFrame( {'DefectID': list3,'Diffusion Coefficient': list4})
-        df.to_csv("./wholeVideo/diffusionCoefficient.csv",header = True)
-        ######################################################################################
-
-        for item in self.disappear: #disappear has (id, frameNum)
-            for everyitme in self.firstAppear:
-                if item[0]== everyitme[0]:
-                    firstframeAppear= everyitme[1]
-                    lastframeAppear=item[1]
-                    framesForPlot.append((item[0], firstframeAppear, lastframeAppear))
-                    for i in range(firstframeAppear, lastframeAppear): # i is the frame 
-                        for defects in self.sumFrameDefectPosition[i]:
-                            if defects[0]== item[0]:
-                                oneIDsizeChange.append((defects[3],defects[4]))
-                                storeForPosition.append((i,defects[1],defects[2],defects[4]))
-                    self.sizeChange.append((item[0], oneIDsizeChange))
-                    self.storeForLAST.append((item[0], storeForPosition))
-                    oneIDsizeChange=[]
-                    storeForPosition=[]
-
-        ############################################## This is for DC VS Size #######################################
-        for i in range(len(self.sumFrameDefectPosition)): # i is the frame 
-            for defects in self.sumFrameDefectPosition[i]:
-                print(str(defects))
-                if defects[0] in sizeGlobal.keys():
-                    sizeGlobal[defects[0]].append((defects[3],defects[4]))
-                else:
-                    sizeGlobal[defects[0]]=list()
-                    sizeGlobal[defects[0]].append((defects[3],defects[4]))
-        print(sizeGlobal)
-       	for i in sizeGlobal.keys():
-            with open("./wholeVideo/sizeGlobalFrame/"+str(i)+".txt", 'w+') as filehandle:
-                filehandle.write(str(sizeGlobal[i]))
-       ##############################################################################################################
-        #max(data, key=lambda item: item[1]
-        for item in self.sizeChange: #sizeChange: (id,((size, frameNum), (size,frameNum), (size, frameNum)....)) 
-            maxSize=max(item[1], key=lambda item: item[0])
-            minSize=min(item[1], key=lambda item: item[0])
-
-            if((maxSize[0]-minSize[0])/minSize[0])> 1.2:
-                firstMechanism.append(item)
-
-        for XXX in self.storeForLAST:
-            with open('./positionforeachDefect/'+str(XXX[0])+'.txt','w+') as filehandle:
-                filehandle.write(str(XXX[1]))
-
-        # num Lists to store total defects
-        for clearance in firstMechanism:
-            if clearance not in forclearance:
-                forclearance.append(clearance)
-        firstMechanism=forclearance
-        forclearance=[]
-
-        for clearance in firstMechanismPos:
-            if clearance not in forclearance:
-                forclearance.append(clearance)
-        firstMechanismPos=forclearance
-        forclearance=[]
-        for key, values in loacalStoreForMFD.items():
-            with open("./wholeVideo/distanceForEachDefect/"+str(key)+".txt", 'w+') as filehandle:
-                filehandle.write(str(values))
-
-        with open("./wholeVideo/sizeChange.txt", "w+") as filehandle:
-            filehandle.write("Total: "+str(len(self.sizeChange))+" loops disappeared")
-            for item in self.sizeChange:
-                filehandle.write(str(item[0]))
-                filehandle.write("\n")
-                filehandle.write(str(item[1]))
-                filehandle.write("\n")
-                
-        for item in firstMechanism:
-            with open("./wholeVideo/firstMechanism/"+str(item[0])+".txt", "w+") as filehandle:
-                filehandle.write(str(item[1]))
-                filehandle.write("\n")
-        
-        with open('./wholeVideo/density.txt', 'w+') as filehandle:
-            for items in self.density:
-                filehandle.write(str(items[0])+","+str(items[1]))
-                filehandle.write('\n')
-        
-        with open('./wholeVideo/firstMechanismPos.txt','w+') as filehandle:
-            for item in firstMechanismPos:
-               filehandle.write(str(item[0]))
-               filehandle.write("\n")
-               filehandle.write(str(item[1]))
-               filehandle.write("\n")
-
-        num_total = list()
-        for item in self.sumFrameDefectID:
-            num_total.append(len(item))
-        # num_list of new defects
-        # first reorgnize the new generated defects
-        generatedDict = dict()
-        for (frame_i, idList) in self.generatedList:
-            generatedDict[frame_i] = len(idList)
-            # print("dicttionary:  "+str(generatedDict))
-        # then populate all the lists
-        num_generated = list()
-        for i in range(0,len(self.sumFrameDefectID)):
-            if i in generatedDict.keys():
-                num_generated.append(generatedDict[i])
-            else:
-                num_generated.append(0)
-        # check correctedness
-        assert(len(num_generated) == len(num_total))
-        # calculate number of annihilation
-        num_annihilation = list()
-        # first frame shuold be 0
-        num_annihilation.append(0)
-        for i in range(1,len(num_total)):
-             num_annihilation.append(num_total[i-1] - (num_total[i] - num_generated[i]))
-        # store files
-        with open('./wholeVideo/sumFrameDefectPosition.txt', 'w+') as filehandle:  
-            filehandle.write( str(self.sumFrameDefectPosition))
-
-        with open('./wholeVideo/sumFrameID.txt', 'w+') as filehandle:  
-            filehandle.write( str(self.sumFrameDefectID))
-
-        with open('./wholeVideo/sumNewDefectsID.txt', 'w+') as filehandle:  
-            filehandle.write( str(self.generatedList))
-
-        with open('./wholeVideo/pltGenerateAndAnni.txt', 'w+') as filehandle:
-            for i in range(len(self.allframe)):
-                filehandle.write("\n"+ str(i)+"," + str(len(self.sumFrameDefectID[i]))+","+str(len(self.generatedList[i][1]))+","+str(num_annihilation[i]))
-        with open('./wholeVideo/disappearID.txt', 'w+') as filehandle:
-            filehandle.write(str(self.disappear))
-        # store all the number information into a csv
-        df = pd.DataFrame( {'TotalNum': num_total,'GeneratedNum': num_generated,'AnnihilationNum': num_annihilation})
-        df.to_csv("./wholeVideo/NumberStats.csv",header = True)
-        # store all results into the local
-        print('------------ Rainbow -------------')
-        self.sess.close()
+def close_session(self):
+    self.sess.close()
 
 def detect_video(yolo, video_path, output_path=""):
     import cv2
     vid = cv2.VideoCapture(video_path)
     if not vid.isOpened():
         raise IOError("Couldn't open webcam or video")
-    # video_FourCC    = int(vid.get(cv2.CAP_PROP_FOURCC))
+
     video_FourCC = cv2.VideoWriter_fourcc(*'XVID')
     video_fps       = vid.get(cv2.CAP_PROP_FPS)
     video_size      = (int(vid.get(cv2.CAP_PROP_FRAME_WIDTH)),
@@ -785,41 +603,27 @@ def detect_video(yolo, video_path, output_path=""):
             curr_fps = 0
         cv2.putText(result, text=fps, org=(3, 15), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                     fontScale=0.50, color=(255, 0, 0), thickness=2)
-        #cv2.namedWindow("result", cv2.WINDOW_NORMAL)
-        # cv2.imshow("result", result)
+
         if isOutput:
             out.write(result)
         if cv2.waitKey(1) & 0xFF == ord('q'):
-            break    
-    # with open("reusltForFrame.txt", "r+") as f:
-    #     f.write(self.sumFrameDefectPosition)
-
+            break
     yolo.close_session()
 
 
 def detect_img(yolo):
+    global imageName
     global globalFrameInformation
     positionXlist=[]
     positionYlist=[]
     frameNum=[]
     positionlist=[]
-    # while True:
-    #     img = input('Input image filename:')
-    #     imageName=img
-    #     try:
-    #         image = Image.open(img)
-    #     except:
-    #         print('Open Error! Try again!')
-    #         continue
-    #     else:
-    #         r_image = yolo.detect_image(image)
-    #         r_image.save('detect'+img, "JPEG")
-    # yolo.close_session()
 
     with open ("./frame_crop/list.txt",'r') as f:
         content=f.readlines()
         for item in content:
             img=item.strip()
+            imageName=img
             try:
                 image = Image.open("./frame_crop/"+img)
             except:
@@ -827,20 +631,6 @@ def detect_img(yolo):
                 continue
             else:
                 r_image = yolo.detect_image(image)
-                r_image.save("./frame_corp_detected/detect"+img, "JPEG")
-    for item in globalFrameInformation:
-        for subitem in item:
-            frameNum.append(subitem[4])
-            positionXlist.append(subitem[1])
-            positionYlist.append(subitem[2])
-            positionlist.append((subitem[4],subitem[1],subitem[2]))
-    d={'frame': frameNum, 'y':positionYlist, 'x':positionXlist}
-    df=pd.DataFrame(data=d)
-    df.to_csv("./trackpyResult/forceCSV.csv",index=None)
-    yolo.close_session()
-
-
-
-
 if __name__ == '__main__':
     detect_img(YOLO())
+print("Rainbow")

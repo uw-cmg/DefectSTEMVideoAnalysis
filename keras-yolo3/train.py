@@ -14,7 +14,7 @@ from yolo3.utils import get_random_data
 
 
 def _main():
-    annotation_path = 'trianingSet.txt'
+    annotation_path = 'dreadnought.txt'
     log_dir = 'logs/000/'
     classes_path = 'model_data/voc_classes.txt'
     anchors_path = 'model_data/yolo_anchors.txt'
@@ -30,15 +30,15 @@ def _main():
             freeze_body=2, weights_path='model_data/tiny_yolo_weights.h5')
     else:
         model = create_model(input_shape, anchors, num_classes,
-            freeze_body=2, weights_path='model_data/CarlosV.h5') # make sure you know what you freeze
+            freeze_body=2, weights_path='model_data/NicolaosVII.h5') # make sure you know what you freeze
 
     logging = TensorBoard(log_dir=log_dir)
     checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
         monitor='val_loss', save_weights_only=True, save_best_only=True, period=3)
-    #reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1)
-    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10000, verbose=1)
+    #reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=100, verbose=1)
+    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=100000, verbose=1)
 
-    val_split = 0.2
+    val_split = 0.25
     with open(annotation_path) as f:
         lines = f.readlines()
     np.random.seed(10101)
@@ -50,7 +50,7 @@ def _main():
     # Train with frozen layers first, to get a stable loss.
     # Adjust num epochs to your dataset. This step is enough to obtain a not bad model.
     if True:
-        model.compile(optimizer=Adam(lr=1e-5), loss={
+        model.compile(optimizer=Adam(lr=1e-4), loss={
             # use custom yolo_loss Lambda layer.
             'yolo_loss': lambda y_true, y_pred: y_pred})
 
@@ -63,14 +63,14 @@ def _main():
                 epochs=50,
                 initial_epoch=0,
                 callbacks=[logging, checkpoint])
-        model.save_weights(log_dir + 'trained_weights_stage_1.h5')
+        model.save_weights(log_dir + 'Save_ModelI.h5')
 
     # Unfreeze and continue training, to fine-tune.
     # Train longer if the result is not good.
     if True:
         for i in range(len(model.layers)):
             model.layers[i].trainable = True
-        model.compile(optimizer=Adam(lr=1e-5), loss={'yolo_loss': lambda y_true, y_pred: y_pred}) # recompile to apply the change
+        model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred}) # recompile to apply the change
         print('Unfreeze all of the layers.')
 
         batch_size = 4 # note that more GPU memory is required after unfreezing the body
@@ -80,9 +80,9 @@ def _main():
             validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors, num_classes),
             validation_steps=max(1, num_val//batch_size),
             epochs=3000,
-            initial_epoch=50,
+            initial_epoch=10,
             callbacks=[logging, checkpoint, early_stopping])
-        model.save_weights(log_dir + 'some_name_for_your_model.h5')
+        model.save_weights(log_dir + 'YOUR_MODEL_TRAINED.h5')
 
     # Further training if needed.
 
@@ -121,7 +121,7 @@ def create_model(input_shape, anchors, num_classes, load_pretrained=True, freeze
         print('Load weights {}.'.format(weights_path))
         if freeze_body in [1, 2]:
             # Freeze darknet53 body or freeze all but 3 output layers.
-            num = (185, len(model_body.layers)-5)[freeze_body-1]
+            num = (185, len(model_body.layers)-7)[freeze_body-1]
             for i in range(num): model_body.layers[i].trainable = False
             print('Freeze the first {} layers of total {} layers.'.format(num, len(model_body.layers)))
 
@@ -131,6 +131,7 @@ def create_model(input_shape, anchors, num_classes, load_pretrained=True, freeze
     model = Model([model_body.input, *y_true], model_loss)
 
     return model
+    
 
 def create_tiny_model(input_shape, anchors, num_classes, load_pretrained=True, freeze_body=2,
             weights_path='model_data/tiny_yolo_weights.h5'):
