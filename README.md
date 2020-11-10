@@ -8,7 +8,7 @@ Our code is modified from [qqwweee/keras-yolo3](https://github.com/qqwweee/keras
 
 ## Run
 
-You first need to download the weights we trained. If you want to train for original YOLO weights, following instructions described [here](https://github.com/uw-cmg/DefectSTEMVideoAnalysis/tree/master/keras-yolo3)
+You first need to download the weights we trained. If you want to train for original YOLO weights, following instructions described [here](https://github.com/uw-cmg/DefectSTEMVideoAnalysis/tree/master/codes)
 
 * [our trained weights for the paper](https://github.com/uw-cmg/DefectSTEMVideoAnalysis/tree/master/weights)
 
@@ -19,11 +19,5 @@ You can run the training with the following command
 python3 train.py
 
 ```
+You can run the demo of the code in this [Notebook]() via Google Colab.
 
-You can run the testing with the following command
-
-```
-
-python3 yolo_IoU_test.py
-
-```
