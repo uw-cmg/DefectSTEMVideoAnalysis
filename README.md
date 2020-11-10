@@ -8,9 +8,11 @@ Our code is modified from [qqwweee/keras-yolo3](https://github.com/qqwweee/keras
 
 ## Run
 
-You first need to download the weights we trained. If you want to train for original YOLO weights, following instructions described [here](https://github.com/uw-cmg/DefectSTEMVideoAnalysis/tree/master/codes)
+You first need to download the weights we trained. It is Github Large Files, you need to use `git lfs clone` or you can download it from [this FigShare URL]()
 
-* [our trained weights for the paper](https://github.com/uw-cmg/DefectSTEMVideoAnalysis/tree/master/weights)
+If you want to train for original YOLO weights, following instructions described [here](https://github.com/uw-cmg/DefectSTEMVideoAnalysis/tree/master/codes)
+
+* [our trained weights for the paper](https://github.com/uw-cmg/DefectSTEMVideoAnalysis/blob/master/codes/model_data/NicolaosVII.h5)
 
 You can run the training with the following command
 
