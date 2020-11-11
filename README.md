@@ -21,5 +21,5 @@ You can run the training with the following command
 python3 train.py
 
 ```
-You can run the demo of the code in this [Notebook]() via Google Colab.
+You can run the demo of the code in this [Notebook](https://github.com/uw-cmg/DefectSTEMVideoAnalysis/blob/master/YOLODemo.ipynb) via Google Colab.
 
