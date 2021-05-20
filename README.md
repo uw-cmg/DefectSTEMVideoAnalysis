@@ -1,6 +1,6 @@
 # Defect STEM Video Analysis
 
-This project provides the source code for the paper  [A Deep Learning Based Automatic Defect Analysis Framework for In-situ TEM Ion Irradiations](https://www.sciencedirect.com/science/article/pii/S0927025621002871)
+This project provides the source code for the paper  [A Deep Learning Based Automatic Defect Analysis Framework for In-situ TEM Ion Irradiations](https://doi.org/10.1016/j.commatsci.2021.110560)
 
 ## Installation
 
